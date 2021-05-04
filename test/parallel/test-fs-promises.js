@@ -452,6 +452,30 @@ async function getHandle(dest) {
       assert.strictEqual(ret.bytesWritten, 2);
       await handle.close();
     }
+
+    {
+      const handle = await getHandle(dest);
+
+      assert.rejects(
+        async () => handle.write('abc', 0, 'hex'),
+        {
+          code: 'ERR_INVALID_ARG_VALUE',
+          message: /'encoding' is invalid for data of length 3/
+        }
+      );
+
+      const ret = await handle.write('abcd', 0, 'hex');
+      assert.strictEqual(ret.bytesWritten, 2);
+      await handle.close();
+    }
+
+    // Make cause
+    {
+      const handle = await getHandle(dest);
+      handle.stat();
+      handle.close();
+      handle.close();
+    }
   }
 
   doTest().then(common.mustCall());
