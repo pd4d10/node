@@ -25,6 +25,11 @@ assert.throws(
   }
 );
 
+dns.lookupService('example', 80, common.expectsError({
+  code: '',
+  message: '',
+}));
+
 assert.rejects(
   dns.promises.lookupService('127.0.0.1', 80),
   {

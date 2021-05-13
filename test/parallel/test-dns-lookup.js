@@ -7,7 +7,8 @@ const cares = internalBinding('cares_wrap');
 
 // Stub `getaddrinfo` to *always* error. This has to be done before we load the
 // `dns` module to guarantee that the `dns` module uses the stub.
-cares.getaddrinfo = () => internalBinding('uv').UV_ENOMEM;
+let getaddrinfoStub = null;
+cares.getaddrinfo = (req) => getaddrinfoStub(req);
 
 const dns = require('dns');
 const dnsPromises = dns.promises;
@@ -136,26 +137,53 @@ dns.lookup('127.0.0.1', {
   hints: 0,
   family: 4,
   all: false
-}, common.mustSucceed((result, addressType) => {
+}, common.mustSucceed((result, addressType) => {1
   assert.deepStrictEqual(result, '127.0.0.1');
   assert.strictEqual(addressType, 4);
 }));
 
-let tickValue = 0;
+async function testStub() {
+  getaddrinfoStub = () => internalBinding('uv').UV_ENOMEM;
 
-// Should fail due to stub.
-dns.lookup('example.com', common.mustCall((error, result, addressType) => {
-  assert(error);
-  assert.strictEqual(tickValue, 1);
-  assert.strictEqual(error.code, 'ENOMEM');
-  const descriptor = Object.getOwnPropertyDescriptor(error, 'message');
-  // The error message should be non-enumerable.
-  assert.strictEqual(descriptor.enumerable, false);
-}));
+  await new Promise((resolve) => {
+    let tickValue = 0;
 
-// Make sure that the error callback is called on next tick.
-tickValue = 1;
+    // Should fail due to stub.
+    dns.lookup('example.com', common.mustCall((error, result, addressType) => {
+      assert(error);
+      assert.strictEqual(tickValue, 1);
+      assert.strictEqual(error.code, 'ENOMEM');
+      const descriptor = Object.getOwnPropertyDescriptor(error, 'message');
+      // The error message should be non-enumerable.
+      assert.strictEqual(descriptor.enumerable, false);
 
-// Should fail due to stub.
-assert.rejects(dnsPromises.lookup('example.com'),
-               { code: 'ENOMEM', hostname: 'example.com' });
+      resolve();
+    }));
+
+    // Make sure that the error callback is called on next tick.
+    tickValue = 1;
+  });
+
+  // Should fail due to stub.
+  await assert.rejects(dnsPromises.lookup('example.com'),
+                       { code: 'ENOMEM', hostname: 'example.com' });
+
+  // getaddrinfoStub = (req) => {
+  //   const originalReject = req.reject;
+  //   req.resolve = common.mustNotCall();
+  //   req.reject = common.mustCall(originalReject);
+  //   req.oncomplete(internalBinding('uv').UV_ENOMEM);
+  // };
+
+  // dns.lookup('example', common.expectsError({
+  //   code: 'ENOMEM',
+  //   message: 'getaddrinfo ENOMEM example',
+  // }));
+
+  // dns.lookup('example', { all: true }, common.expectsError({
+  //   code: 'ENOMEM',
+  //   message: 'getaddrinfo ENOMEM example',
+  // }));
+}
+
+testStub();
