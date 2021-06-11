@@ -87,34 +87,16 @@ function assertCursorRowsAndCols(rli, rows, cols) {
   const input = new FakeInput();
 
   // Constructor throws if completer is not a function or undefined
-  assert.throws(() => {
-    readline.createInterface({
-      input,
-      completer: 'string is not valid'
+  ['not an array', 123, 123n, {}, true, Symbol(), null].forEach((invalid) => {
+    assert.throws(() => {
+      readline.createInterface({
+        input,
+        completer: invalid
+      });
+    }, {
+      name: 'TypeError',
+      code: 'ERR_INVALID_ARG_VALUE'
     });
-  }, {
-    name: 'TypeError',
-    code: 'ERR_INVALID_ARG_VALUE'
-  });
-
-  assert.throws(() => {
-    readline.createInterface({
-      input,
-      completer: ''
-    });
-  }, {
-    name: 'TypeError',
-    code: 'ERR_INVALID_ARG_VALUE'
-  });
-
-  assert.throws(() => {
-    readline.createInterface({
-      input,
-      completer: false
-    });
-  }, {
-    name: 'TypeError',
-    code: 'ERR_INVALID_ARG_VALUE'
   });
 
   // Constructor throws if history is not an array
@@ -931,6 +913,17 @@ for (let i = 0; i < 12; i++) {
     }));
     rli.question('hello?', common.mustNotCall());
     rli.write('bar\n');
+  }
+
+  // Calling the question multiple times
+  {
+    const [rli] = getInterface({ terminal });
+    rli.question('foo?', common.mustCall((answer) => {
+      assert.strictEqual(answer, 'baz');
+    }));
+    rli.question('bar?', common.mustNotCall(() => {
+    }));
+    rli.write('baz\n');
     rli.close();
   }
 

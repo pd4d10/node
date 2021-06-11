@@ -1,8 +1,6 @@
 const t = require('tap')
 const mockNpm = require('../fixtures/mock-npm')
 const { resolve, delimiter } = require('path')
-const OUTPUT = []
-const output = (...msg) => OUTPUT.push(msg)
 
 const ARB_CTOR = []
 const ARB_ACTUAL_TREE = {}
@@ -36,6 +34,7 @@ const config = {
   package: [],
   'script-shell': 'shell-cmd',
 }
+
 const npm = mockNpm({
   flatOptions,
   config,
@@ -53,7 +52,6 @@ const npm = mockNpm({
       LOG_WARN.push(args)
     },
   },
-  output,
 })
 
 const RUN_SCRIPTS = []
@@ -121,11 +119,15 @@ t.afterEach(() => {
 
 t.test('npx foo, bin already exists locally', t => {
   const path = t.testdir({
-    foo: 'just some file',
+    node_modules: {
+      '.bin': {
+        foo: 'just some file',
+      },
+    },
   })
 
   PROGRESS_IGNORED = true
-  npm.localBin = path
+  npm.localBin = resolve(path, 'node_modules', '.bin')
 
   exec.exec(['foo', 'one arg', 'two arg'], er => {
     t.error(er, 'npm exec')
@@ -137,7 +139,7 @@ t.test('npx foo, bin already exists locally', t => {
       stdioString: true,
       event: 'npx',
       env: {
-        PATH: [path, ...PATH].join(delimiter),
+        PATH: [npm.localBin, ...PATH].join(delimiter),
       },
       stdio: 'inherit',
     }])
@@ -147,11 +149,15 @@ t.test('npx foo, bin already exists locally', t => {
 
 t.test('npx foo, bin already exists globally', t => {
   const path = t.testdir({
-    foo: 'just some file',
+    node_modules: {
+      '.bin': {
+        foo: 'just some file',
+      },
+    },
   })
 
   PROGRESS_IGNORED = true
-  npm.globalBin = path
+  npm.globalBin = resolve(path, 'node_modules', '.bin')
 
   exec.exec(['foo', 'one arg', 'two arg'], er => {
     t.error(er, 'npm exec')
@@ -163,7 +169,7 @@ t.test('npx foo, bin already exists globally', t => {
       stdioString: true,
       event: 'npx',
       env: {
-        PATH: [path, ...PATH].join(delimiter),
+        PATH: [npm.globalBin, ...PATH].join(delimiter),
       },
       stdio: 'inherit',
     }])
@@ -217,7 +223,7 @@ t.test('npm exec <noargs>, run interactive shell', t => {
     ARB_CTOR.length = 0
     MKDIRPS.length = 0
     ARB_REIFY.length = 0
-    OUTPUT.length = 0
+    npm._mockOutputs.length = 0
     exec.exec([], er => {
       if (er)
         throw er
@@ -248,7 +254,7 @@ t.test('npm exec <noargs>, run interactive shell', t => {
     process.stdin.isTTY = true
     run(t, true, () => {
       t.strictSame(LOG_WARN, [])
-      t.strictSame(OUTPUT, [
+      t.strictSame(npm._mockOutputs, [
         [`\nEntering npm script environment at location:\n${process.cwd()}\nType 'exit' or ^D when finished\n`],
       ], 'printed message about interactive shell')
       t.end()
@@ -262,7 +268,7 @@ t.test('npm exec <noargs>, run interactive shell', t => {
 
     run(t, true, () => {
       t.strictSame(LOG_WARN, [])
-      t.strictSame(OUTPUT, [
+      t.strictSame(npm._mockOutputs, [
         [`\u001b[0m\u001b[0m\n\u001b[0mEntering npm script environment\u001b[0m\u001b[0m at location:\u001b[0m\n\u001b[0m\u001b[2m${process.cwd()}\u001b[22m\u001b[0m\u001b[1m\u001b[22m\n\u001b[1mType 'exit' or ^D when finished\u001b[22m\n\u001b[1m\u001b[22m`],
       ], 'printed message about interactive shell')
       t.end()
@@ -274,7 +280,7 @@ t.test('npm exec <noargs>, run interactive shell', t => {
     process.stdin.isTTY = false
     run(t, true, () => {
       t.strictSame(LOG_WARN, [])
-      t.strictSame(OUTPUT, [], 'no message about interactive shell')
+      t.strictSame(npm._mockOutputs, [], 'no message about interactive shell')
       t.end()
     })
   })
@@ -286,7 +292,7 @@ t.test('npm exec <noargs>, run interactive shell', t => {
       t.strictSame(LOG_WARN, [
         ['exec', 'Interactive mode disabled in CI environment'],
       ])
-      t.strictSame(OUTPUT, [], 'no message about interactive shell')
+      t.strictSame(npm._mockOutputs, [], 'no message about interactive shell')
       t.end()
     })
   })
@@ -301,14 +307,14 @@ t.test('npm exec <noargs>, run interactive shell', t => {
         throw er
 
       t.match(RUN_SCRIPTS, [{
-        pkg: { scripts: { npx: undefined } },
+        pkg: { scripts: { npx: /sh|cmd/ } },
       }])
 
       LOG_WARN.length = 0
       ARB_CTOR.length = 0
       MKDIRPS.length = 0
       ARB_REIFY.length = 0
-      OUTPUT.length = 0
+      npm._mockOutputs.length = 0
       RUN_SCRIPTS.length = 0
       t.end()
     })
@@ -593,7 +599,7 @@ t.test('run command with 2 packages, need install, verify sort', t => {
   for (const packages of cases) {
     t.test(packages.join(', '), t => {
       config.package = packages
-      const add = packages.map(p => `${p}@`).sort((a, b) => a.localeCompare(b))
+      const add = packages.map(p => `${p}@`).sort((a, b) => a.localeCompare(b, 'en'))
       const path = t.testdir()
       const installDir = resolve('cache-dir/_npx/07de77790e5f40f2')
       npm.localPrefix = path
@@ -748,7 +754,7 @@ t.test('prompt when installs are needed if not already present and shell is a TT
   config.package = packages
   config.yes = undefined
 
-  const add = packages.map(p => `${p}@`).sort((a, b) => a.localeCompare(b))
+  const add = packages.map(p => `${p}@`).sort((a, b) => a.localeCompare(b, 'en'))
   const path = t.testdir()
   const installDir = resolve('cache-dir/_npx/07de77790e5f40f2')
   npm.localPrefix = path
@@ -817,7 +823,7 @@ t.test('skip prompt when installs are needed if not already present and shell is
   config.package = packages
   config.yes = undefined
 
-  const add = packages.map(p => `${p}@`).sort((a, b) => a.localeCompare(b))
+  const add = packages.map(p => `${p}@`).sort((a, b) => a.localeCompare(b, 'en'))
   const path = t.testdir()
   const installDir = resolve('cache-dir/_npx/07de77790e5f40f2')
   npm.localPrefix = path
@@ -884,7 +890,7 @@ t.test('skip prompt when installs are needed if not already present and shell is
   config.package = packages
   config.yes = undefined
 
-  const add = packages.map(p => `${p}@`).sort((a, b) => a.localeCompare(b))
+  const add = packages.map(p => `${p}@`).sort((a, b) => a.localeCompare(b, 'en'))
   const path = t.testdir()
   const installDir = resolve('cache-dir/_npx/f7fbba6e0636f890')
   npm.localPrefix = path
@@ -1187,7 +1193,7 @@ t.test('workspaces', t => {
           return rej(er)
 
         t.strictSame(LOG_WARN, [])
-        t.strictSame(OUTPUT, [
+        t.strictSame(npm._mockOutputs, [
           [`\nEntering npm script environment in workspace a@1.0.0 at location:\n${resolve(npm.localPrefix, 'packages/a')}\nType 'exit' or ^D when finished\n`],
         ], 'printed message about interactive shell')
         res()
@@ -1195,14 +1201,14 @@ t.test('workspaces', t => {
     })
 
     config.color = true
-    OUTPUT.length = 0
+    npm._mockOutputs.length = 0
     await new Promise((res, rej) => {
       exec.execWorkspaces([], ['a'], er => {
         if (er)
           return rej(er)
 
         t.strictSame(LOG_WARN, [])
-        t.strictSame(OUTPUT, [
+        t.strictSame(npm._mockOutputs, [
           [`\u001b[0m\u001b[0m\n\u001b[0mEntering npm script environment\u001b[0m\u001b[0m in workspace \u001b[32ma@1.0.0\u001b[39m at location:\u001b[0m\n\u001b[0m\u001b[2m${resolve(npm.localPrefix, 'packages/a')}\u001b[22m\u001b[0m\u001b[1m\u001b[22m\n\u001b[1mType 'exit' or ^D when finished\u001b[22m\n\u001b[1m\u001b[22m`],
         ], 'printed message about interactive shell')
         res()

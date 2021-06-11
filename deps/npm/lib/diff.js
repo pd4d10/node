@@ -8,7 +8,7 @@ const npmlog = require('npmlog')
 const pacote = require('pacote')
 const pickManifest = require('npm-pick-manifest')
 
-const readLocalPkg = require('./utils/read-local-package.js')
+const readPackageName = require('./utils/read-package-name.js')
 const BaseCommand = require('./base-command.js')
 
 class Diff extends BaseCommand {
@@ -29,6 +29,22 @@ class Diff extends BaseCommand {
       '--diff=<version-a> [--diff=<version-b>] [...<paths>]',
       '--diff=<spec-a> [--diff=<spec-b>] [...<paths>]',
       '[--diff-ignore-all-space] [--diff-name-only] [...<paths>] [...<paths>]',
+    ]
+  }
+
+  /* istanbul ignore next - see test/lib/load-all-commands.js */
+  static get params () {
+    return [
+      'diff',
+      'diff-name-only',
+      'diff-unified',
+      'diff-ignore-all-space',
+      'diff-no-prefix',
+      'diff-src-prefix',
+      'diff-dst-prefix',
+      'diff-text',
+      'global',
+      'tag',
     ]
   }
 
@@ -81,7 +97,7 @@ class Diff extends BaseCommand {
     let noPackageJson
     let pkgName
     try {
-      pkgName = await readLocalPkg(this.npm)
+      pkgName = await readPackageName(this.npm.prefix)
     } catch (e) {
       npmlog.verbose('diff', 'could not read project dir package.json')
       noPackageJson = true
@@ -104,7 +120,7 @@ class Diff extends BaseCommand {
     let noPackageJson
     let pkgName
     try {
-      pkgName = await readLocalPkg(this.npm)
+      pkgName = await readPackageName(this.npm.prefix)
     } catch (e) {
       npmlog.verbose('diff', 'could not read project dir package.json')
       noPackageJson = true
@@ -222,7 +238,7 @@ class Diff extends BaseCommand {
     if (semverA && semverB) {
       let pkgName
       try {
-        pkgName = await readLocalPkg(this.npm)
+        pkgName = await readPackageName(this.npm.prefix)
       } catch (e) {
         npmlog.verbose('diff', 'could not read project dir package.json')
       }

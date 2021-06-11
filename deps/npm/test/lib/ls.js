@@ -21,19 +21,19 @@ const simpleNmFixture = {
         name: 'foo',
         version: '1.0.0',
         dependencies: {
-          bar: '^1.0.0',
+          dog: '^1.0.0',
         },
       }),
     },
-    bar: {
+    dog: {
       'package.json': JSON.stringify({
-        name: 'bar',
+        name: 'dog',
         version: '1.0.0',
       }),
     },
-    lorem: {
+    chai: {
       'package.json': JSON.stringify({
-        name: 'lorem',
+        name: 'chai',
         version: '1.0.0',
       }),
     },
@@ -58,13 +58,13 @@ const diffDepTypesNmFixture = {
         description: 'A PROD dep kind of dep',
         version: '1.0.0',
         dependencies: {
-          bar: '^2.0.0',
+          dog: '^2.0.0',
         },
       }),
       node_modules: {
-        bar: {
+        dog: {
           'package.json': JSON.stringify({
-            name: 'bar',
+            name: 'dog',
             description: 'A dep that bars',
             version: '2.0.0',
           }),
@@ -90,7 +90,12 @@ const diffDepTypesNmFixture = {
 }
 
 let result = ''
-const LS = require('../../lib/ls.js')
+const LS = t.mock('../../lib/ls.js', {
+  path: {
+    ...require('path'),
+    sep: '/',
+  },
+})
 const config = {
   all: true,
   color: false,
@@ -132,7 +137,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -181,12 +186,12 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
     })
-    ls.exec(['lorem'], (err) => {
+    ls.exec(['chai'], (err) => {
       t.error(err, 'npm ls')
       t.matchSnapshot(redactCwd(result), 'should output tree contaning only occurrences of filtered by package and colored output')
       npm.color = false
@@ -224,12 +229,12 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
     })
-    ls.exec(['bar'], (err) => {
+    ls.exec(['dog'], (err) => {
       t.error(err, 'npm ls')
       t.matchSnapshot(redactCwd(result), 'should output tree contaning only occurrences of filtered package and its ancestors')
       t.end()
@@ -243,7 +248,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
           ipsum: '^1.0.0',
         },
       }),
@@ -257,7 +262,7 @@ t.test('ls', (t) => {
         },
       },
     })
-    ls.exec(['bar@*', 'lorem@1.0.0'], (err) => {
+    ls.exec(['dog@*', 'chai@1.0.0'], (err) => {
       t.error(err, 'npm ls')
       t.matchSnapshot(redactCwd(result), 'should output tree contaning only occurrences of multiple filtered packages and their ancestors')
       t.end()
@@ -271,7 +276,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -298,7 +303,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -321,7 +326,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -412,9 +417,9 @@ t.test('ls', (t) => {
       t.equal(err.code, 'ELSPROBLEMS', 'should have error code')
       t.equal(
         redactCwd(err.message).replace(/\r\n/g, '\n'),
+        'extraneous: chai@1.0.0 {CWD}/tap-testdir-ls-ls-missing-invalid-extraneous/node_modules/chai\n' +
         'invalid: foo@1.0.0 {CWD}/tap-testdir-ls-ls-missing-invalid-extraneous/node_modules/foo\n' +
-        'missing: ipsum@^1.0.0, required by test-npm-ls@1.0.0\n' +
-        'extraneous: lorem@1.0.0 {CWD}/tap-testdir-ls-ls-missing-invalid-extraneous/node_modules/lorem',
+        'missing: ipsum@^1.0.0, required by test-npm-ls@1.0.0',
         'should log missing/invalid/extraneous errors'
       )
       t.matchSnapshot(redactCwd(result), 'should output tree containing missing, invalid, extraneous labels')
@@ -451,7 +456,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -480,7 +485,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -509,7 +514,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
           'linked-dep': '^1.0.0',
         },
         devDependencies: {
@@ -584,7 +589,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -613,7 +618,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -642,7 +647,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -673,7 +678,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -723,7 +728,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -835,7 +840,7 @@ t.test('ls', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -1243,7 +1248,7 @@ t.test('ls', (t) => {
         dependencies: {
           a: {
             version: '1.0.1',
-            resolved: 'foo@bar://b8f3a2fc0c3bb8ffd8b0d0072cc6b5a3667e963c',
+            resolved: 'foo@dog://b8f3a2fc0c3bb8ffd8b0d0072cc6b5a3667e963c',
             integrity: 'sha512-8AN9lNCcBt5Xeje7fMEEpp5K3rgcAzIpTtAjYb/YMUYu8SbIVF6wz0WqACDVKvpQOUcSfNHZQNLNmue0QSwXOQ==',
           },
         },
@@ -1407,14 +1412,16 @@ t.test('ls', (t) => {
     })
   })
 
-  t.test('loading a tree containing workspaces', (t) => {
-    npm.prefix = t.testdir({
+  t.test('loading a tree containing workspaces', async (t) => {
+    npm.localPrefix = npm.prefix = t.testdir({
       'package.json': JSON.stringify({
-        name: 'filter-by-child-of-missing-dep',
+        name: 'workspaces-tree',
         version: '1.0.0',
         workspaces: [
           './a',
           './b',
+          './d',
+          './group/*',
         ],
       }),
       node_modules: {
@@ -1426,6 +1433,21 @@ t.test('ls', (t) => {
             version: '1.0.0',
           }),
         },
+        d: t.fixture('symlink', '../d'),
+        e: t.fixture('symlink', '../group/e'),
+        f: t.fixture('symlink', '../group/f'),
+        foo: {
+          'package.json': JSON.stringify({
+            name: 'foo',
+            version: '1.1.1',
+            dependencies: {
+              bar: '^1.0.0',
+            },
+          }),
+        },
+        bar: {
+          'package.json': JSON.stringify({ name: 'bar', version: '1.0.0' }),
+        },
       },
       a: {
         'package.json': JSON.stringify({
@@ -1433,6 +1455,7 @@ t.test('ls', (t) => {
           version: '1.0.0',
           dependencies: {
             c: '^1.0.0',
+            d: '^1.0.0',
           },
         }),
       },
@@ -1442,18 +1465,104 @@ t.test('ls', (t) => {
           version: '1.0.0',
         }),
       },
+      d: {
+        'package.json': JSON.stringify({
+          name: 'd',
+          version: '1.0.0',
+          dependencies: {
+            foo: '^1.1.1',
+          },
+        }),
+      },
+      group: {
+        e: {
+          'package.json': JSON.stringify({
+            name: 'e',
+            version: '1.0.0',
+          }),
+        },
+        f: {
+          'package.json': JSON.stringify({
+            name: 'f',
+            version: '1.0.0',
+          }),
+        },
+      },
     })
 
-    ls.exec([], (err) => {
-      t.error(err, 'should NOT have ELSPROBLEMS error code')
-      t.matchSnapshot(redactCwd(result), 'should list workspaces properly')
+    await new Promise((res, rej) => {
+      config.all = false
+      config.depth = 0
+      npm.color = true
+      ls.exec([], (err) => {
+        if (err)
+          rej(err)
 
-      // should also be able to filter out one of the workspaces
-      ls.exec(['a'], (err) => {
-        t.error(err, 'should NOT have ELSPROBLEMS error code when filter')
+        t.matchSnapshot(redactCwd(result),
+          'should list workspaces properly with default configs')
+        config.all = true
+        config.depth = Infinity
+        npm.color = false
+        res()
+      })
+    })
+
+    // --all
+    await new Promise((res, rej) => {
+      ls.exec([], (err) => {
+        if (err)
+          rej(err)
+
+        t.matchSnapshot(redactCwd(result),
+          'should list --all workspaces properly')
+        res()
+      })
+    })
+
+    // filter out a single workspace using args
+    await new Promise((res, rej) => {
+      ls.exec(['d'], (err) => {
+        if (err)
+          rej(err)
+
         t.matchSnapshot(redactCwd(result), 'should filter single workspace')
+        res()
+      })
+    })
 
-        t.end()
+    // filter out a single workspace and its deps using workspaces filters
+    await new Promise((res, rej) => {
+      ls.execWorkspaces([], ['a'], (err) => {
+        if (err)
+          rej(err)
+
+        t.matchSnapshot(redactCwd(result),
+          'should filter using workspace config')
+        res()
+      })
+    })
+
+    // filter out a workspace by parent path
+    await new Promise((res, rej) => {
+      ls.execWorkspaces([], ['./group'], (err) => {
+        if (err)
+          rej(err)
+
+        t.matchSnapshot(redactCwd(result),
+          'should filter by parent folder workspace config')
+        res()
+      })
+    })
+
+    // filter by a dep within a workspaces sub tree
+    await new Promise((res, rej) => {
+      ls.execWorkspaces(['bar'], ['d'], (err) => {
+        if (err)
+          rej(err)
+
+        t.matchSnapshot(redactCwd(result),
+          'should print all tree and filter by dep within only the ws subtree')
+        res()
       })
     })
   })
@@ -1544,7 +1653,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -1592,12 +1701,12 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
     })
-    ls.exec(['lorem'], (err) => {
+    ls.exec(['chai'], (err) => {
       t.error(err, 'npm ls')
       t.matchSnapshot(redactCwd(result), 'should output parseable contaning only occurrences of filtered by package')
       t.end()
@@ -1611,12 +1720,12 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
     })
-    ls.exec(['bar'], (err) => {
+    ls.exec(['dog'], (err) => {
       t.error(err, 'npm ls')
       t.matchSnapshot(redactCwd(result), 'should output parseable contaning only occurrences of filtered package')
       t.end()
@@ -1630,7 +1739,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
           ipsum: '^1.0.0',
         },
       }),
@@ -1644,7 +1753,7 @@ t.test('ls --parseable', (t) => {
         },
       },
     })
-    ls.exec(['bar@*', 'lorem@1.0.0'], (err) => {
+    ls.exec(['dog@*', 'chai@1.0.0'], (err) => {
       t.error(err, 'npm ls')
       t.matchSnapshot(redactCwd(result), 'should output parseable contaning only occurrences of multiple filtered packages and their ancestors')
       t.end()
@@ -1658,7 +1767,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -1685,7 +1794,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -1708,7 +1817,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -1731,7 +1840,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -1772,7 +1881,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -1801,7 +1910,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -1830,7 +1939,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
           'linked-dep': '^1.0.0',
         },
         devDependencies: {
@@ -1869,7 +1978,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -1898,7 +2007,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -1927,7 +2036,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -1995,7 +2104,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
           'linked-dep': '^1.0.0',
         },
         devDependencies: {
@@ -2037,7 +2146,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -2087,7 +2196,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -2114,7 +2223,7 @@ t.test('ls --parseable', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -2463,7 +2572,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -2479,12 +2588,12 @@ t.test('ls --json', (t) => {
             foo: {
               version: '1.0.0',
               dependencies: {
-                bar: {
+                dog: {
                   version: '1.0.0',
                 },
               },
             },
-            lorem: {
+            chai: {
               version: '1.0.0',
             },
           },
@@ -2505,16 +2614,16 @@ t.test('ls --json', (t) => {
         jsonParse(result),
         {
           problems: [
-            'extraneous: bar@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-package.json/node_modules/bar',
+            'extraneous: chai@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-package.json/node_modules/chai',
+            'extraneous: dog@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-package.json/node_modules/dog',
             'extraneous: foo@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-package.json/node_modules/foo',
-            'extraneous: lorem@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-package.json/node_modules/lorem',
           ],
           dependencies: {
-            bar: {
+            dog: {
               version: '1.0.0',
               extraneous: true,
               problems: [
-                'extraneous: bar@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-package.json/node_modules/bar',
+                'extraneous: dog@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-package.json/node_modules/dog',
               ],
             },
             foo: {
@@ -2524,16 +2633,16 @@ t.test('ls --json', (t) => {
                 'extraneous: foo@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-package.json/node_modules/foo',
               ],
               dependencies: {
-                bar: {
+                dog: {
                   version: '1.0.0',
                 },
               },
             },
-            lorem: {
+            chai: {
               version: '1.0.0',
               extraneous: true,
               problems: [
-                'extraneous: lorem@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-package.json/node_modules/lorem',
+                'extraneous: chai@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-package.json/node_modules/chai',
               ],
             },
           },
@@ -2563,22 +2672,22 @@ t.test('ls --json', (t) => {
           name: 'test-npm-ls',
           version: '1.0.0',
           problems: [
-            'extraneous: lorem@1.0.0 {CWD}/tap-testdir-ls-ls---json-extraneous-deps/node_modules/lorem',
+            'extraneous: chai@1.0.0 {CWD}/tap-testdir-ls-ls---json-extraneous-deps/node_modules/chai',
           ],
           dependencies: {
             foo: {
               version: '1.0.0',
               dependencies: {
-                bar: {
+                dog: {
                   version: '1.0.0',
                 },
               },
             },
-            lorem: {
+            chai: {
               version: '1.0.0',
               extraneous: true,
               problems: [
-                'extraneous: lorem@1.0.0 {CWD}/tap-testdir-ls-ls---json-extraneous-deps/node_modules/lorem',
+                'extraneous: chai@1.0.0 {CWD}/tap-testdir-ls-ls---json-extraneous-deps/node_modules/chai',
               ],
             },
           },
@@ -2597,8 +2706,8 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          bar: '^1.0.0',
-          lorem: '^1.0.0',
+          dog: '^1.0.0',
+          chai: '^1.0.0',
           ipsum: '^1.0.0',
         },
       }),
@@ -2638,12 +2747,12 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
     })
-    ls.exec(['lorem'], (err) => {
+    ls.exec(['chai'], (err) => {
       t.error(err, 'npm ls')
       t.same(
         jsonParse(result),
@@ -2651,7 +2760,7 @@ t.test('ls --json', (t) => {
           name: 'test-npm-ls',
           version: '1.0.0',
           dependencies: {
-            lorem: {
+            chai: {
               version: '1.0.0',
             },
           },
@@ -2674,12 +2783,12 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
     })
-    ls.exec(['bar'], (err) => {
+    ls.exec(['dog'], (err) => {
       t.error(err, 'npm ls')
       t.same(
         jsonParse(result),
@@ -2690,7 +2799,7 @@ t.test('ls --json', (t) => {
             foo: {
               version: '1.0.0',
               dependencies: {
-                bar: {
+                dog: {
                   version: '1.0.0',
                 },
               },
@@ -2710,7 +2819,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
           ipsum: '^1.0.0',
         },
       }),
@@ -2724,7 +2833,7 @@ t.test('ls --json', (t) => {
         },
       },
     })
-    ls.exec(['bar@*', 'lorem@1.0.0'], (err) => {
+    ls.exec(['dog@*', 'chai@1.0.0'], (err) => {
       t.error(err, 'npm ls')
       t.same(
         jsonParse(result),
@@ -2735,12 +2844,12 @@ t.test('ls --json', (t) => {
             foo: {
               version: '1.0.0',
               dependencies: {
-                bar: {
+                dog: {
                   version: '1.0.0',
                 },
               },
             },
-            lorem: {
+            chai: {
               version: '1.0.0',
             },
           },
@@ -2758,7 +2867,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -2792,7 +2901,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -2808,7 +2917,7 @@ t.test('ls --json', (t) => {
             foo: {
               version: '1.0.0',
             },
-            lorem: {
+            chai: {
               version: '1.0.0',
             },
           },
@@ -2830,7 +2939,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -2846,7 +2955,7 @@ t.test('ls --json', (t) => {
             foo: {
               version: '1.0.0',
             },
-            lorem: {
+            chai: {
               version: '1.0.0',
             },
           },
@@ -2868,7 +2977,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           foo: '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
       }),
       ...simpleNmFixture,
@@ -2884,12 +2993,12 @@ t.test('ls --json', (t) => {
             foo: {
               version: '1.0.0',
               dependencies: {
-                bar: {
+                dog: {
                   version: '1.0.0',
                 },
               },
             },
-            lorem: {
+            chai: {
               version: '1.0.0',
             },
           },
@@ -2922,9 +3031,9 @@ t.test('ls --json', (t) => {
           name: 'test-npm-ls',
           version: '1.0.0',
           problems: [
+            'extraneous: chai@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-invalid-extraneous/node_modules/chai',
             'invalid: foo@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-invalid-extraneous/node_modules/foo',
             'missing: ipsum@^1.0.0, required by test-npm-ls@1.0.0',
-            'extraneous: lorem@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-invalid-extraneous/node_modules/lorem',
           ],
           dependencies: {
             foo: {
@@ -2934,16 +3043,16 @@ t.test('ls --json', (t) => {
                 'invalid: foo@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-invalid-extraneous/node_modules/foo',
               ],
               dependencies: {
-                bar: {
+                dog: {
                   version: '1.0.0',
                 },
               },
             },
-            lorem: {
+            chai: {
               version: '1.0.0',
               extraneous: true,
               problems: [
-                'extraneous: lorem@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-invalid-extraneous/node_modules/lorem',
+                'extraneous: chai@1.0.0 {CWD}/tap-testdir-ls-ls---json-missing-invalid-extraneous/node_modules/chai',
               ],
             },
             ipsum: {
@@ -2969,7 +3078,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -2995,7 +3104,7 @@ t.test('ls --json', (t) => {
               dependencies: {
                 foo: {
                   version: '1.0.0',
-                  dependencies: { bar: { version: '1.0.0' } },
+                  dependencies: { dog: { version: '1.0.0' } },
                 },
               },
             },
@@ -3016,7 +3125,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -3042,7 +3151,7 @@ t.test('ls --json', (t) => {
               dependencies: {
                 foo: {
                   version: '1.0.0',
-                  dependencies: { bar: { version: '1.0.0' } },
+                  dependencies: { dog: { version: '1.0.0' } },
                 },
               },
             },
@@ -3063,7 +3172,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
           'linked-dep': '^1.0.0',
         },
         devDependencies: {
@@ -3115,7 +3224,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -3136,9 +3245,9 @@ t.test('ls --json', (t) => {
           name: 'test-npm-ls',
           version: '1.0.0',
           dependencies: {
-            lorem: { version: '1.0.0' },
+            chai: { version: '1.0.0' },
             'optional-dep': { version: '1.0.0' },
-            'prod-dep': { version: '1.0.0', dependencies: { bar: { version: '2.0.0' } } },
+            'prod-dep': { version: '1.0.0', dependencies: { dog: { version: '2.0.0' } } },
           },
         },
         'should output json containing production deps'
@@ -3156,7 +3265,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -3177,9 +3286,9 @@ t.test('ls --json', (t) => {
           name: 'test-npm-ls',
           version: '1.0.0',
           dependencies: {
-            lorem: { version: '1.0.0' },
+            chai: { version: '1.0.0' },
             'optional-dep': { version: '1.0.0' },
-            'prod-dep': { version: '1.0.0', dependencies: { bar: { version: '2.0.0' } } },
+            'prod-dep': { version: '1.0.0', dependencies: { dog: { version: '2.0.0' } } },
           },
         },
         'should output json containing only prod deps'
@@ -3326,7 +3435,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -3367,21 +3476,21 @@ t.test('ls --json', (t) => {
                   name: 'foo',
                   version: '1.0.0',
                   dependencies: {
-                    bar: {
-                      name: 'bar',
+                    dog: {
+                      name: 'dog',
                       version: '1.0.0',
-                      _id: 'bar@1.0.0',
+                      _id: 'dog@1.0.0',
                       devDependencies: {},
                       peerDependencies: {},
                       _dependencies: {},
-                      path: '{CWD}/tap-testdir-ls-ls---json---long/node_modules/bar',
+                      path: '{CWD}/tap-testdir-ls-ls---json---long/node_modules/dog',
                       extraneous: false,
                     },
                   },
                   _id: 'foo@1.0.0',
                   devDependencies: {},
                   peerDependencies: {},
-                  _dependencies: { bar: '^1.0.0' },
+                  _dependencies: { dog: '^1.0.0' },
                   path: '{CWD}/tap-testdir-ls-ls---json---long/node_modules/foo',
                   extraneous: false,
                 },
@@ -3393,14 +3502,14 @@ t.test('ls --json', (t) => {
               path: '{CWD}/tap-testdir-ls-ls---json---long/node_modules/dev-dep',
               extraneous: false,
             },
-            lorem: {
-              name: 'lorem',
+            chai: {
+              name: 'chai',
               version: '1.0.0',
-              _id: 'lorem@1.0.0',
+              _id: 'chai@1.0.0',
               devDependencies: {},
               peerDependencies: {},
               _dependencies: {},
-              path: '{CWD}/tap-testdir-ls-ls---json---long/node_modules/lorem',
+              path: '{CWD}/tap-testdir-ls-ls---json---long/node_modules/chai',
               extraneous: false,
             },
             'optional-dep': {
@@ -3419,22 +3528,22 @@ t.test('ls --json', (t) => {
               description: 'A PROD dep kind of dep',
               version: '1.0.0',
               dependencies: {
-                bar: {
-                  name: 'bar',
+                dog: {
+                  name: 'dog',
                   description: 'A dep that bars',
                   version: '2.0.0',
-                  _id: 'bar@2.0.0',
+                  _id: 'dog@2.0.0',
                   devDependencies: {},
                   peerDependencies: {},
                   _dependencies: {},
-                  path: '{CWD}/tap-testdir-ls-ls---json---long/node_modules/prod-dep/node_modules/bar',
+                  path: '{CWD}/tap-testdir-ls-ls---json---long/node_modules/prod-dep/node_modules/dog',
                   extraneous: false,
                 },
               },
               _id: 'prod-dep@1.0.0',
               devDependencies: {},
               peerDependencies: {},
-              _dependencies: { bar: '^2.0.0' },
+              _dependencies: { dog: '^2.0.0' },
               path: '{CWD}/tap-testdir-ls-ls---json---long/node_modules/prod-dep',
               extraneous: false,
             },
@@ -3443,7 +3552,7 @@ t.test('ls --json', (t) => {
           optionalDependencies: { 'optional-dep': '^1.0.0' },
           peerDependencies: { 'peer-dep': '^1.0.0' },
           _id: 'test-npm-ls@1.0.0',
-          _dependencies: { 'prod-dep': '^1.0.0', lorem: '^1.0.0', 'optional-dep': '^1.0.0' },
+          _dependencies: { 'prod-dep': '^1.0.0', chai: '^1.0.0', 'optional-dep': '^1.0.0' },
           path: '{CWD}/tap-testdir-ls-ls---json---long',
           extraneous: false,
         },
@@ -3464,7 +3573,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -3507,14 +3616,14 @@ t.test('ls --json', (t) => {
               path: '{CWD}/tap-testdir-ls-ls---json---long---depth-0/node_modules/dev-dep',
               extraneous: false,
             },
-            lorem: {
-              name: 'lorem',
+            chai: {
+              name: 'chai',
               version: '1.0.0',
-              _id: 'lorem@1.0.0',
+              _id: 'chai@1.0.0',
               devDependencies: {},
               peerDependencies: {},
               _dependencies: {},
-              path: '{CWD}/tap-testdir-ls-ls---json---long---depth-0/node_modules/lorem',
+              path: '{CWD}/tap-testdir-ls-ls---json---long---depth-0/node_modules/chai',
               extraneous: false,
             },
             'optional-dep': {
@@ -3535,7 +3644,7 @@ t.test('ls --json', (t) => {
               _id: 'prod-dep@1.0.0',
               devDependencies: {},
               peerDependencies: {},
-              _dependencies: { bar: '^2.0.0' },
+              _dependencies: { dog: '^2.0.0' },
               path: '{CWD}/tap-testdir-ls-ls---json---long---depth-0/node_modules/prod-dep',
               extraneous: false,
             },
@@ -3544,7 +3653,7 @@ t.test('ls --json', (t) => {
           optionalDependencies: { 'optional-dep': '^1.0.0' },
           peerDependencies: { 'peer-dep': '^1.0.0' },
           _id: 'test-npm-ls@1.0.0',
-          _dependencies: { 'prod-dep': '^1.0.0', lorem: '^1.0.0', 'optional-dep': '^1.0.0' },
+          _dependencies: { 'prod-dep': '^1.0.0', chai: '^1.0.0', 'optional-dep': '^1.0.0' },
           path: '{CWD}/tap-testdir-ls-ls---json---long---depth-0',
           extraneous: false,
         },
@@ -3598,7 +3707,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -3635,13 +3744,13 @@ t.test('ls --json', (t) => {
               dependencies: {
                 foo: {
                   version: '1.0.0',
-                  dependencies: { bar: { version: '1.0.0' } },
+                  dependencies: { dog: { version: '1.0.0' } },
                 },
               },
             },
-            lorem: { version: '1.0.0' },
+            chai: { version: '1.0.0' },
             'optional-dep': { version: '1.0.0' },
-            'prod-dep': { version: '1.0.0', dependencies: { bar: { version: '2.0.0' } } },
+            'prod-dep': { version: '1.0.0', dependencies: { dog: { version: '2.0.0' } } },
           },
         },
         'should output json signaling missing peer dep in problems'
@@ -3657,7 +3766,7 @@ t.test('ls --json', (t) => {
         version: '1.0.0',
         dependencies: {
           'prod-dep': '^1.0.0',
-          lorem: '^1.0.0',
+          chai: '^1.0.0',
         },
         devDependencies: {
           'dev-dep': '^1.0.0',
@@ -3699,12 +3808,12 @@ t.test('ls --json', (t) => {
               dependencies: {
                 foo: {
                   version: '1.0.0',
-                  dependencies: { bar: { version: '1.0.0' } },
+                  dependencies: { dog: { version: '1.0.0' } },
                 },
               },
             },
-            lorem: { version: '1.0.0' },
-            'prod-dep': { version: '1.0.0', dependencies: { bar: { version: '2.0.0' } } },
+            chai: { version: '1.0.0' },
+            'prod-dep': { version: '1.0.0', dependencies: { dog: { version: '2.0.0' } } },
             'missing-optional-dep': {}, // missing optional dep has an empty entry in json output
           },
         },

@@ -36,7 +36,7 @@ class Exec extends BaseCommand {
 
   /* istanbul ignore next - see test/lib/load-all-commands.js */
   static get params () {
-    return ['workspace', 'workspaces']
+    return ['package', 'call', 'workspace', 'workspaces']
   }
 
   /* istanbul ignore next - see test/lib/load-all-commands.js */
@@ -76,8 +76,8 @@ class Exec extends BaseCommand {
       localBin,
       log,
       globalBin,
-      output,
     } = this.npm
+    const output = (...outputArgs) => this.npm.output(...outputArgs)
     const scriptShell = this.npm.config.get('script-shell') || undefined
     const packages = this.npm.config.get('package')
     const yes = this.npm.config.get('yes')
